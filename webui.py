@@ -68,8 +68,8 @@ shared.sd_model = modules.sd_models.load_model()
 shared.opts.onchange("sd_model_checkpoint", wrap_queued_call(lambda: modules.sd_models.reload_model_weights(shared.sd_model)))
 
 
-def webui():
-    if not cmd_opts.api:
+def webui(api: bool = True):
+    if not api:
         # make the program just exit at ctrl+c without waiting for anything
         def sigint_handler(sig, frame):
             print(f'Interrupted with signal {sig} in {frame}')

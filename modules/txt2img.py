@@ -6,7 +6,12 @@ import modules.processing as processing
 from modules.ui import plaintext_to_html
 
 
-def txt2img(prompt: str, negative_prompt: str, prompt_style: str, prompt_style2: str, steps: int, sampler_index: int, restore_faces: bool, tiling: bool, n_iter: int, batch_size: int, cfg_scale: float, seed: int, subseed: int, subseed_strength: float, seed_resize_from_h: int, seed_resize_from_w: int, height: int, width: int, enable_hr: bool, scale_latent: bool, denoising_strength: float, *args):
+def txt2img(
+        prompt: str, negative_prompt: str, prompt_style: str, prompt_style2: str, steps: int, sampler_index: int,
+        restore_faces: bool, tiling: bool, n_iter: int, batch_size: int, cfg_scale: float, seed: int, subseed: int,
+        subseed_strength: float, seed_resize_from_h: int, seed_resize_from_w: int, height: int, width: int,
+        enable_hr: bool, scale_latent: bool, denoising_strength: float, *args
+):
     p = StableDiffusionProcessingTxt2Img(
         sd_model=shared.sd_model,
         outpath_samples=opts.outdir_samples or opts.outdir_txt2img_samples,
@@ -36,9 +41,7 @@ def txt2img(prompt: str, negative_prompt: str, prompt_style: str, prompt_style2:
     print(f"\ntxt2img: {prompt}", file=shared.progress_print_out)
     processed = modules.scripts.scripts_txt2img.run(p, *args)
 
-    if processed is not None:
-        pass
-    else:
+    if processed is None:
         processed = process_images(p)
 
     shared.total_tqdm.clear()

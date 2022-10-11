@@ -98,6 +98,7 @@ class ScriptRunner:
         for script_class, path in scripts_data:
             script = script_class()
             script.filename = path
+            print(script, "->", path)
 
             if not script.show(is_img2img):
                 continue
@@ -143,13 +144,12 @@ class ScriptRunner:
 
         return inputs
 
-
     def run(self, p: StableDiffusionProcessing, *args):
         script_index = args[0]
 
         if script_index == 0:
             return None
-
+        print(self.scripts)
         script = self.scripts[script_index-1]
 
         if script is None:

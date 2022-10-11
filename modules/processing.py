@@ -75,6 +75,7 @@ class StableDiffusionProcessing:
         self.paste_to = None
         self.color_corrections = None
         self.denoising_strength: float = 0
+        print(width, height, self.width, self.height)
 
     def init(self, all_prompts, all_seeds, all_subseeds):
         pass
@@ -116,6 +117,7 @@ class Processed:
         self.all_prompts = all_prompts or [self.prompt]
         self.all_seeds = all_seeds or [self.seed]
         self.all_subseeds = all_subseeds or [self.subseed]
+        print(self.width, self.height)
 
     def js(self):
         obj = {
@@ -549,7 +551,7 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
                 image = images.resize_image(self.resize_mode, image, self.width, self.height)
 
             if self.image_mask is not None:
-                image_masked = Image.new('RGBa', (image.width, image.height))
+                image_masked = Image.new('RGBA', (image.width, image.height))
                 image_masked.paste(image.convert("RGBA").convert("RGBa"), mask=ImageOps.invert(self.mask_for_overlay.convert('L')))
 
                 self.overlay_images.append(image_masked.convert('RGBA'))

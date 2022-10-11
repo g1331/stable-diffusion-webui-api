@@ -11,7 +11,15 @@ from modules.ui import plaintext_to_html
 import modules.images as images
 import modules.scripts
 
-def img2img(prompt: str, negative_prompt: str, prompt_style: str, prompt_style2: str, init_img, init_img_with_mask, init_mask, mask_mode, steps: int, sampler_index: int, mask_blur: int, inpainting_fill: int, restore_faces: bool, tiling: bool, mode: int, n_iter: int, batch_size: int, cfg_scale: float, denoising_strength: float, seed: int, subseed: int, subseed_strength: float, seed_resize_from_h: int, seed_resize_from_w: int, height: int, width: int, resize_mode: int, upscaler_index: str, upscale_overlap: int, inpaint_full_res: bool, inpainting_mask_invert: int, *args):
+
+def img2img(
+        prompt: str, negative_prompt: str, prompt_style: str, prompt_style2: str, init_img, init_img_with_mask,
+        init_mask, mask_mode, steps: int, sampler_index: int, mask_blur: int, inpainting_fill: int,
+        restore_faces: bool, tiling: bool, mode: int, n_iter: int, batch_size: int, cfg_scale: float,
+        denoising_strength: float, seed: int, subseed: int, subseed_strength: float, seed_resize_from_h: int,
+        seed_resize_from_w: int, height: int, width: int, resize_mode: int, upscaler_index: str,
+        upscale_overlap: int, inpaint_full_res: bool, inpainting_mask_invert: int, *args
+):
     is_inpaint = mode == 1
     is_upscale = mode == 2
 
@@ -29,7 +37,9 @@ def img2img(prompt: str, negative_prompt: str, prompt_style: str, prompt_style2:
         image = init_img
         mask = None
 
-    assert 0. <= denoising_strength <= 1., 'can only work with strength in [0.0, 1.0]'
+    print("img2img", width, height)
+
+    # assert 0. <= denoising_strength <= 1., 'can only work with strength in [0.0, 1.0]'
 
     p = StableDiffusionProcessingImg2Img(
         sd_model=shared.sd_model,
@@ -63,6 +73,8 @@ def img2img(prompt: str, negative_prompt: str, prompt_style: str, prompt_style2:
     )
     print(f"\nimg2img: {prompt}", file=shared.progress_print_out)
 
+    print("StableDiffusionProcessingImg2Img", p.width, p.height)
+
     p.extra_generation_params["Mask blur"] = mask_blur
 
     if is_upscale:
@@ -93,7 +105,8 @@ def img2img(prompt: str, negative_prompt: str, prompt_style: str, prompt_style2:
         batch_count = math.ceil(len(work) / batch_size)
         state.job_count = batch_count * upscale_count
 
-        print(f"SD upscaling will process a total of {len(work)} images tiled as {len(grid.tiles[0][2])}x{len(grid.tiles)} per upscale in a total of {state.job_count} batches.")
+        print(
+            f"SD upscaling will process a total of {len(work)} images tiled as {len(grid.tiles[0][2])}x{len(grid.tiles)} per upscale in a total of {state.job_count} batches.")
 
         result_images = []
         for n in range(upscale_count):
@@ -103,7 +116,7 @@ def img2img(prompt: str, negative_prompt: str, prompt_style: str, prompt_style2:
             work_results = []
             for i in range(batch_count):
                 p.batch_size = batch_size
-                p.init_images = work[i*batch_size:(i+1)*batch_size]
+                p.init_images = work[i * batch_size:(i + 1) * batch_size]
 
                 state.job = f"Batch {i + 1 + n * batch_count} out of {state.job_count}"
                 processed = process_images(p)
@@ -117,18 +130,22 @@ def img2img(prompt: str, negative_prompt: str, prompt_style: str, prompt_style2:
             image_index = 0
             for y, h, row in grid.tiles:
                 for tiledata in row:
-                    tiledata[2] = work_results[image_index] if image_index < len(work_results) else Image.new("RGB", (p.width, p.height))
+                    tiledata[2] = work_results[image_index] if image_index < len(work_results) else Image.new("RGB", (
+                    p.width, p.height))
                     image_index += 1
 
             combined_image = images.combine_grid(grid)
             result_images.append(combined_image)
 
             if opts.samples_save:
-                images.save_image(combined_image, p.outpath_samples, "", start_seed, prompt, opts.samples_format, info=initial_info, p=p)
+                images.save_image(combined_image, p.outpath_samples, "", start_seed, prompt, opts.samples_format,
+                                  info=initial_info, p=p)
 
         processed = Processed(p, result_images, seed, initial_info)
 
     else:
+
+        print("img2img", width, height)
 
         processed = modules.scripts.scripts_img2img.run(p, *args)
 

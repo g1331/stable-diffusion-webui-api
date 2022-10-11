@@ -3,6 +3,7 @@ import os
 import sys
 
 script_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+print("script_path", script_path)
 sys.path.insert(0, script_path)
 
 # search for directory of stable diffsuion in following palces

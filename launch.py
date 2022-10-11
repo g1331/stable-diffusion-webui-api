@@ -23,6 +23,7 @@ taming_transformers_commit_hash = os.environ.get('TAMING_TRANSFORMERS_COMMIT_HAS
 codeformer_commit_hash = os.environ.get('CODEFORMER_COMMIT_HASH', "c5b4593074ba6214284d6acd5f1719b6c5d739af")
 blip_commit_hash = os.environ.get('BLIP_COMMIT_HASH', "48211a1594f1321b00f14c9f7a5b4813144b2fb9")
 
+
 def repo_dir(name):
     return os.path.join(dir_repos, name)
 
@@ -123,5 +124,7 @@ def start_webui():
     import webui
     webui.webui()
 
+
 if __name__ == "__main__":
     start_webui()
+    # start_webui()
