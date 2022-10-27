@@ -132,8 +132,8 @@ class Api:
         self.run_pnginfo = run_pnginfo
 
         self.router = APIRouter()
-        app.add_api_route("/v1/txt2img", self.txt2imgendoint, response_model=TextToImageResponse)
-        app.add_api_route("/v1/img2img", self.img2imgendoint, response_model=ImageToImageResponse)
+        app.add_api_route("/v1/txt2img", self.txt2imgendoint, response_model=TextToImageResponse, methods=['GET', 'POST'])
+        app.add_api_route("/v1/img2img", self.img2imgendoint, response_model=ImageToImageResponse,  methods=['GET', 'POST'])
         app.add_api_route("/v1/extras", self.extrasendoint)
         app.add_api_route("/v1/pnginfo", self.pnginfoendoint)
 
