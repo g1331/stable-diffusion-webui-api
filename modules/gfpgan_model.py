@@ -13,12 +13,10 @@ def gfpgan_model_path():
 
     places = [script_path, '.', os.path.join(cmd_opts.gfpgan_dir, 'experiments/pretrained_models')]
     files = [cmd_opts.gfpgan_model] + [os.path.join(dirname, cmd_opts.gfpgan_model) for dirname in places]
-    found = [x for x in files if os.path.exists(x)]
-
-    if len(found) == 0:
+    if found := [x for x in files if os.path.exists(x)]:
+        return found[0]
+    else:
         raise Exception("GFPGAN model not found in paths: " + ", ".join(files))
-
-    return found[0]
 
 
 loaded_gfpgan_model = None

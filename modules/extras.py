@@ -127,16 +127,17 @@ def run_pnginfo(image):
             items.pop(field, None)
 
 
-    info = ''
-    for key, text in items.items():
-        info += f"""
+    info = ''.join(
+        f"""
 <div>
 <p><b>{plaintext_to_html(str(key))}</b></p>
 <p>{plaintext_to_html(str(text))}</p>
 </div>
-""".strip()+"\n"
-
-    if len(info) == 0:
+""".strip()
+        + "\n"
+        for key, text in items.items()
+    )
+    if not info:
         message = "Nothing found in the image."
         info = f"<div><p>{message}<p></div>"
 

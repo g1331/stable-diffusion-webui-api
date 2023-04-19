@@ -61,7 +61,7 @@ class Script(scripts.Script):
             selected_prompts = [text.strip().strip(',') for n, text in enumerate(prompt_matrix_parts[1:]) if combination_num & (1 << n)]
 
             if put_at_start:
-                selected_prompts = selected_prompts + [prompt_matrix_parts[0]]
+                selected_prompts += [prompt_matrix_parts[0]]
             else:
                 selected_prompts = [prompt_matrix_parts[0]] + selected_prompts
 

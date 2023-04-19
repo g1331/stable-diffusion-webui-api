@@ -75,15 +75,11 @@ def image_from_url_text(filedata):
         filedata = filedata[len("data:image/png;base64,"):]
 
     filedata = base64.decodebytes(filedata.encode('utf-8'))
-    image = Image.open(io.BytesIO(filedata))
-    return image
+    return Image.open(io.BytesIO(filedata))
 
 
 def send_gradio_gallery_to_image(x):
-    if len(x) == 0:
-        return None
-
-    return image_from_url_text(x[0])
+    return None if len(x) == 0 else image_from_url_text(x[0])
 
 
 def save_files(js_data, images, index):
@@ -94,7 +90,7 @@ def save_files(js_data, images, index):
     filenames = []
 
     data = json.loads(js_data)
-    
+
     if index > -1 and opts.save_selected_only and (index > 0 or not opts.return_grid): # ensures we are looking at a specific non-grid picture, and we have save_selected_only
         images = [images[index]]
         data["seed"] += (index - 1 if opts.return_grid else index)
@@ -107,7 +103,11 @@ def save_files(js_data, images, index):
 
         filename_base = str(int(time.time() * 1000))
         for i, filedata in enumerate(images):
-            filename = filename_base + ("" if len(images) == 1 else "-" + str(i + 1)) + ".png"
+            filename = (
+                filename_base
+                + ("" if len(images) == 1 else f"-{str(i + 1)}")
+                + ".png"
+            )
             filepath = os.path.join(opts.outdir_save, filename)
 
             if filedata.startswith("data:image/png;base64,"):
@@ -140,7 +140,11 @@ def wrap_gradio_call(func):
             shared.state.job = ""
             shared.state.job_count = 0
 
-            res = [None, '', f"<div class='error'>{plaintext_to_html(type(e).__name__+': '+str(e))}</div>"]
+            res = [
+                None,
+                '',
+                f"<div class='error'>{plaintext_to_html(f'{type(e).__name__}: {str(e)}')}</div>",
+            ]
 
         elapsed = time.perf_counter() - t
 
@@ -181,17 +185,21 @@ def check_progress_call():
 
     progressbar = ""
     if opts.show_progressbar:
-        progressbar = f"""<div class='progressDiv'><div class='progress' style="width:{progress * 100}%">{str(int(progress*100))+"%" if progress > 0.01 else ""}</div></div>"""
+        progressbar = f"""<div class='progressDiv'><div class='progress' style="width:{progress * 100}%">{f"{int(progress * 100)}%" if progress > 0.01 else ""}</div></div>"""
 
     image = gr_show(False)
     preview_visibility = gr_show(False)
 
     if opts.show_progress_every_n_steps > 0:
-        if shared.parallel_processing_allowed:
-
-            if shared.state.sampling_step - shared.state.current_image_sampling_step >= opts.show_progress_every_n_steps and shared.state.current_latent is not None:
-                shared.state.current_image = modules.sd_samplers.sample_to_image(shared.state.current_latent)
-                shared.state.current_image_sampling_step = shared.state.sampling_step
+        if (
+            shared.parallel_processing_allowed
+            and shared.state.sampling_step
+            - shared.state.current_image_sampling_step
+            >= opts.show_progress_every_n_steps
+            and shared.state.current_latent is not None
+        ):
+            shared.state.current_image = modules.sd_samplers.sample_to_image(shared.state.current_latent)
+            shared.state.current_image_sampling_step = shared.state.sampling_step
 
         image = shared.state.current_image
 
@@ -212,10 +220,15 @@ def check_progress_call_initial():
 
 
 def roll_artist(prompt):
-    allowed_cats = set([x for x in shared.artist_db.categories() if len(opts.random_artist_categories)==0 or x in opts.random_artist_categories])
+    allowed_cats = {
+        x
+        for x in shared.artist_db.categories()
+        if len(opts.random_artist_categories) == 0
+        or x in opts.random_artist_categories
+    }
     artist = random.choice([x for x in shared.artist_db.artists if x.category in allowed_cats])
 
-    return prompt + ", " + artist.name if prompt != '' else artist.name
+    return f"{prompt}, {artist.name}" if prompt != '' else artist.name
 
 
 def visit(x, func, path=""):
@@ -223,7 +236,7 @@ def visit(x, func, path=""):
         for c in x.children:
             visit(c, func, path)
     elif x.label is not None:
-        func(path + "/" + str(x.label), x)
+        func(f"{path}/{str(x.label)}", x)
 
 
 def add_style(name: str, prompt: str, negative_prompt: str):

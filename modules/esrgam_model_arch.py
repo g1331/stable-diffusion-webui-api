@@ -7,9 +7,7 @@ import torch.nn.functional as F
 
 
 def make_layer(block, n_layers):
-    layers = []
-    for _ in range(n_layers):
-        layers.append(block())
+    layers = [block() for _ in range(n_layers)]
     return nn.Sequential(*layers)
 
 
@@ -75,6 +73,4 @@ class RRDBNet(nn.Module):
 
         fea = self.lrelu(self.upconv1(F.interpolate(fea, scale_factor=2, mode='nearest')))
         fea = self.lrelu(self.upconv2(F.interpolate(fea, scale_factor=2, mode='nearest')))
-        out = self.conv_last(self.lrelu(self.HRconv(fea)))
-
-        return out
+        return self.conv_last(self.lrelu(self.HRconv(fea)))

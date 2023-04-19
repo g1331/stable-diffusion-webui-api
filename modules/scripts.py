@@ -81,8 +81,7 @@ def load_scripts(basedir):
 
 def wrap_call(func, filename, funcname, *args, default=None, **kwargs):
     try:
-        res = func(*args, **kwargs)
-        return res
+        return func(*args, **kwargs)
     except Exception:
         print(f"Error calling: {filename}/{funcname}", file=sys.stderr)
         print(traceback.format_exc(), file=sys.stderr)

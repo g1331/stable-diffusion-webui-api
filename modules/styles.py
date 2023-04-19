@@ -22,12 +22,9 @@ class PromptStyle(typing.NamedTuple):
 
 def merge_prompts(style_prompt: str, prompt: str) -> str:
     if "{prompt}" in style_prompt:
-        res = style_prompt.replace("{prompt}", prompt)
-    else:
-        parts = filter(None, (prompt.strip(), style_prompt.strip()))
-        res = ", ".join(parts)
-
-    return res
+        return style_prompt.replace("{prompt}", prompt)
+    parts = filter(None, (prompt.strip(), style_prompt.strip()))
+    return ", ".join(parts)
 
 
 def apply_styles_to_prompt(prompt, styles):
@@ -82,5 +79,5 @@ class StyleDatabase:
 
         # Always keep a backup file around
         if os.path.exists(path):
-            shutil.move(path, path + ".bak")
+            shutil.move(path, f"{path}.bak")
         shutil.move(temp_path, path)

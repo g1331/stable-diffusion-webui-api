@@ -103,10 +103,10 @@ def get_learned_conditioning(prompts, steps):
         texts = [x[1] for x in prompt_schedule]
         conds = shared.sd_model.get_learned_conditioning(texts)
 
-        cond_schedule = []
-        for i, (end_at_step, text) in enumerate(prompt_schedule):
-            cond_schedule.append(ScheduledPromptConditioning(end_at_step, conds[i]))
-
+        cond_schedule = [
+            ScheduledPromptConditioning(end_at_step, conds[i])
+            for i, (end_at_step, text) in enumerate(prompt_schedule)
+        ]
         cache[prompt] = cond_schedule
         res.append(cond_schedule)
 
@@ -116,11 +116,14 @@ def get_learned_conditioning(prompts, steps):
 def reconstruct_cond_batch(c: ScheduledPromptBatch, current_step):
     res = torch.zeros(c.shape, device=shared.device, dtype=next(shared.sd_model.parameters()).dtype)
     for i, cond_schedule in enumerate(c.schedules):
-        target_index = 0
-        for curret_index, (end_at, cond) in enumerate(cond_schedule):
-            if current_step <= end_at:
-                target_index = curret_index
-                break
+        target_index = next(
+            (
+                curret_index
+                for curret_index, (end_at, cond) in enumerate(cond_schedule)
+                if current_step <= end_at
+            ),
+            0,
+        )
         res[i] = cond_schedule[target_index].cond
 
     return res

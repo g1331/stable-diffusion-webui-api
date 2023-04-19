@@ -45,7 +45,7 @@ def apply_sampler(p, x, xs):
 
 def apply_checkpoint(p, x, xs):
     applicable = [info for info in modules.sd_models.checkpoints_list.values() if x in info.title]
-    assert len(applicable) > 0, f'Checkpoint {x} for found'
+    assert applicable, f'Checkpoint {x} for found'
 
     info = applicable[0]
 

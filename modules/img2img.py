@@ -99,9 +99,7 @@ def img2img(
         work = []
 
         for y, h, row in grid.tiles:
-            for tiledata in row:
-                work.append(tiledata[2])
-
+            work.extend(tiledata[2] for tiledata in row)
         batch_count = math.ceil(len(work) / batch_size)
         state.job_count = batch_count * upscale_count
 

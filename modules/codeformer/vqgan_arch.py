@@ -241,10 +241,7 @@ class Encoder(nn.Module):
         curr_res = self.resolution
         in_ch_mult = (1,)+tuple(ch_mult)
 
-        blocks = []
-        # initial convultion
-        blocks.append(nn.Conv2d(in_channels, nf, kernel_size=3, stride=1, padding=1))
-
+        blocks = [nn.Conv2d(in_channels, nf, kernel_size=3, stride=1, padding=1)]
         # residual and downsampling blocks, with attention on smaller res (16x16)
         for i in range(self.num_resolutions):
             block_in_ch = nf * in_ch_mult[i]
@@ -279,21 +276,22 @@ class Encoder(nn.Module):
 class Generator(nn.Module):
     def __init__(self, nf, emb_dim, ch_mult, res_blocks, img_size, attn_resolutions):
         super().__init__()
-        self.nf = nf 
-        self.ch_mult = ch_mult 
+        self.nf = nf
+        self.ch_mult = ch_mult
         self.num_resolutions = len(self.ch_mult)
         self.num_res_blocks = res_blocks
-        self.resolution = img_size 
+        self.resolution = img_size
         self.attn_resolutions = attn_resolutions
         self.in_channels = emb_dim
         self.out_channels = 3
         block_in_ch = self.nf * self.ch_mult[-1]
         curr_res = self.resolution // 2 ** (self.num_resolutions-1)
 
-        blocks = []
-        # initial conv
-        blocks.append(nn.Conv2d(self.in_channels, block_in_ch, kernel_size=3, stride=1, padding=1))
-
+        blocks = [
+            nn.Conv2d(
+                self.in_channels, block_in_ch, kernel_size=3, stride=1, padding=1
+            )
+        ]
         # non-local attention block
         blocks.append(ResBlock(block_in_ch, block_in_ch))
         blocks.append(AttnBlock(block_in_ch))
@@ -332,9 +330,9 @@ class VQAutoEncoder(nn.Module):
                 beta=0.25, gumbel_straight_through=False, gumbel_kl_weight=1e-8, model_path=None):
         super().__init__()
         logger = get_root_logger()
-        self.in_channels = 3 
-        self.nf = nf 
-        self.n_blocks = res_blocks 
+        self.in_channels = 3
+        self.nf = nf
+        self.n_blocks = res_blocks
         self.codebook_size = codebook_size
         self.embed_dim = emb_dim
         self.ch_mult = ch_mult
@@ -382,7 +380,7 @@ class VQAutoEncoder(nn.Module):
                 self.load_state_dict(torch.load(model_path, map_location='cpu')['params'])
                 logger.info(f'vqgan is loaded from: {model_path} [params]')
             else:
-                raise ValueError(f'Wrong params!')
+                raise ValueError('Wrong params!')
 
 
     def forward(self, x):
@@ -431,7 +429,7 @@ class VQGANDiscriminator(nn.Module):
             elif 'params' in chkpt:
                 self.load_state_dict(torch.load(model_path, map_location='cpu')['params'])
             else:
-                raise ValueError(f'Wrong params!')
+                raise ValueError('Wrong params!')
 
     def forward(self, x):
         return self.main(x)

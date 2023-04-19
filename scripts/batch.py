@@ -46,7 +46,7 @@ class Script(scripts.Script):
                     print(f"Error processing {path}:", file=sys.stderr)
                     print(traceback.format_exc(), file=sys.stderr)
 
-            if len(batch_images) == 0:
+            if not batch_images:
                 continue
 
             state.job = f"{batch_no} out of {batch_count}: {batch_images[0][1]}"

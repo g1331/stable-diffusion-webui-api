@@ -38,10 +38,7 @@ def load_model(filename):
             load_net_clean[k] = v
     pretrained_net = load_net_clean
 
-    tbd = []
-    for k, v in crt_net.items():
-        tbd.append(k)
-
+    tbd = [k for k, v in crt_net.items()]
     # directly copy
     for k, v in crt_net.items():
         if k in pretrained_net and pretrained_net[k].size() == v.size():
@@ -131,7 +128,7 @@ def load_models(dirname):
         path = os.path.join(dirname, file)
         model_name, extension = os.path.splitext(file)
 
-        if extension != '.pt' and extension != '.pth':
+        if extension not in ['.pt', '.pth']:
             continue
 
         try:

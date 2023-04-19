@@ -50,7 +50,9 @@ def setup_img2img_steps(p, steps=None):
 
 
 def sample_to_image(samples):
-    x_sample = shared.sd_model.decode_first_stage(samples[0:1].type(shared.sd_model.dtype))[0]
+    x_sample = shared.sd_model.decode_first_stage(
+        samples[:1].type(shared.sd_model.dtype)
+    )[0]
     x_sample = torch.clamp((x_sample + 1.0) / 2.0, min=0.0, max=1.0)
     x_sample = 255. * np.moveaxis(x_sample.cpu().numpy(), 0, 2)
     x_sample = x_sample.astype(np.uint8)
@@ -60,9 +62,12 @@ def sample_to_image(samples):
 def store_latent(decoded):
     state.current_latent = decoded
 
-    if opts.show_progress_every_n_steps > 0 and shared.state.sampling_step % opts.show_progress_every_n_steps == 0:
-        if not shared.parallel_processing_allowed:
-            shared.state.current_image = sample_to_image(decoded)
+    if (
+        opts.show_progress_every_n_steps > 0
+        and shared.state.sampling_step % opts.show_progress_every_n_steps == 0
+        and not shared.parallel_processing_allowed
+    ):
+        shared.state.current_image = sample_to_image(decoded)
 
 
 
@@ -132,9 +137,13 @@ class VanillaStableDiffusionSampler:
         self.init_latent = x
         self.step = 0
 
-        samples = self.sampler.decode(x1, conditioning, t_enc, unconditional_guidance_scale=p.cfg_scale, unconditional_conditioning=unconditional_conditioning)
-
-        return samples
+        return self.sampler.decode(
+            x1,
+            conditioning,
+            t_enc,
+            unconditional_guidance_scale=p.cfg_scale,
+            unconditional_conditioning=unconditional_conditioning,
+        )
 
     def sample(self, p, x, conditioning, unconditional_conditioning, steps=None):
         for fieldname in ['p_sample_ddim', 'p_sample_plms']:
@@ -174,12 +183,10 @@ class CFGDenoiser(torch.nn.Module):
             sigma_in = torch.cat([sigma] * 2)
             cond_in = torch.cat([uncond, cond])
             uncond, cond = self.inner_model(x_in, sigma_in, cond=cond_in).chunk(2)
-            denoised = uncond + (cond - uncond) * cond_scale
         else:
             uncond = self.inner_model(x, sigma, cond=uncond)
             cond = self.inner_model(x, sigma, cond=cond)
-            denoised = uncond + (cond - uncond) * cond_scale
-
+        denoised = uncond + (cond - uncond) * cond_scale
         if self.mask is not None:
             denoised = self.init_latent * self.mask + self.nmask * denoised
 
@@ -216,7 +223,9 @@ class TorchHijack:
         if hasattr(torch, item):
             return getattr(torch, item)
 
-        raise AttributeError("'{}' object has no attribute '{}'".format(type(self).__name__, item))
+        raise AttributeError(
+            f"'{type(self).__name__}' object has no attribute '{item}'"
+        )
 
 
 class KDiffusionSampler:
@@ -286,7 +295,16 @@ class KDiffusionSampler:
         if self.sampler_noises is not None:
             k_diffusion.sampling.torch = TorchHijack(self)
 
-        samples = self.func(self.model_wrap_cfg, x, sigmas, extra_args={'cond': conditioning, 'uncond': unconditional_conditioning, 'cond_scale': p.cfg_scale}, disable=False, callback=self.callback_state)
-
-        return samples
+        return self.func(
+            self.model_wrap_cfg,
+            x,
+            sigmas,
+            extra_args={
+                'cond': conditioning,
+                'uncond': unconditional_conditioning,
+                'cond_scale': p.cfg_scale,
+            },
+            disable=False,
+            callback=self.callback_state,
+        )
 

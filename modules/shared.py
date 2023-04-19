@@ -172,16 +172,14 @@ class Options:
         self.data = {k: v.default for k, v in self.data_labels.items()}
 
     def __setattr__(self, key, value):
-        if self.data is not None:
-            if key in self.data:
-                self.data[key] = value
+        if self.data is not None and key in self.data:
+            self.data[key] = value
 
         return super(Options, self).__setattr__(key, value)
 
     def __getattr__(self, item):
-        if self.data is not None:
-            if item in self.data:
-                return self.data[item]
+        if self.data is not None and item in self.data:
+            return self.data[item]
 
         if item in self.data_labels:
             return self.data_labels[item].default
